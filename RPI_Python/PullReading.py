@@ -26,7 +26,9 @@ import random
 
 def GetReading(sensorID):
 	
-	new_reading = 100 * random.random()
+	new_reading = 120 * random.random()
 	new_reading //= 5
+	
+	new_reading += sensorID*100
 	
 	return new_reading

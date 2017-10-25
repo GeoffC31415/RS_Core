@@ -30,11 +30,14 @@ import RS_Database
 def main():
 	RS_Database.connect_to_db()
 	
-	RS_Database.write_reading(
+	for x in range(0,10):
+		RS_Database.write_reading(
 								datetime.now(), 
-								1, 
-								PullReading.GetReading(1)
-							 )
+								x, 
+								PullReading.GetReading(x)
+								 )
+	
+	RS_Database.commit_DB()
 	
 	return 0
 

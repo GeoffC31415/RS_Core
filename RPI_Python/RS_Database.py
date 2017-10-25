@@ -61,12 +61,19 @@ def write_reading(logtime, sensorID, reading):
 	
 	try:
 		cur.execute(qrystr)
-		db.commit()
-		print "Data committed"
 		
 	except:
-		print "DB query error"
-		db.rollback()
+		print "DB execute error"
 	
 	return 0
 	
+def commit_DB():
+	
+	try:
+		db.commit()
+		print "Data committed"
+	
+	except:
+		print "DB commit error"
+	
+	return 0
