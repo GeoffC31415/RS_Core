@@ -23,12 +23,23 @@
 #  
 
 import random
+import Adafruit_DHT
+
+sensor_DHT11 = Adafruit_DHT.DHT11
+pin_DHT11 = 4
 
 def GetReading(sensorID):
 	
-	new_reading = 120 * random.random()
-	new_reading //= 5
+	if sensorID == 1:
+		humidity, temperature = Adafruit_DHT.read_retry(sensor_DHT11, pin_DHT11)
+		if humidity is not None:
+			new_reading = humidity
+	elif sensorID == 2:
+		humidity, temperature = Adafruit_DHT.read_retry(sensor_DHT11, pin_DHT11)
+		if temperature is not None:
+			new_reading = temperature
 	
-	new_reading += sensorID*100
-	
-	return new_reading
+	if new_reading is not None:
+		return new_reading
+	else:
+		return -1

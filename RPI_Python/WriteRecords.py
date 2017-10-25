@@ -30,7 +30,7 @@ import RS_Database
 def main():
 	RS_Database.connect_to_db()
 	
-	for x in range(0,10):
+	for x in range(1,3):
 		RS_Database.write_reading(
 								datetime.now(), 
 								x, 
