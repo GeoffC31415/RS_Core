@@ -24,9 +24,26 @@
 
 import random
 import Adafruit_DHT
+import Adafruit_GPIO.SPI as SPI
+import Adafruit_MCP3008
 
+# DHT setup
 sensor_DHT11 = Adafruit_DHT.DHT11
 pin_DHT11 = 4
+
+# pH probe setup on SPI
+SPI_PORT   = 0
+SPI_DEVICE = 0
+PH_CHANNEL = 0
+PH_OFFSET = 0
+mcp = Adafruit_MCP3008.MCP3008(spi=SPI.SpiDev(SPI_PORT, SPI_DEVICE))
+
+def adc_to_ph(input):
+	
+	volts = input * (5 / 1024) # Assumes the probe is running off five volts
+	ph = 3.5 * volts + PH_OFFSET
+	
+	return ph
 
 def GetReading(sensorID):
 	
@@ -38,6 +55,8 @@ def GetReading(sensorID):
 		humidity, temperature = Adafruit_DHT.read_retry(sensor_DHT11, pin_DHT11)
 		if temperature is not None:
 			new_reading = temperature
+	elif sensorID == 3:
+		new_reading = adc_to_ph(mcp.read_adc(PH_CHANNEL))
 	
 	if new_reading is not None:
 		return new_reading

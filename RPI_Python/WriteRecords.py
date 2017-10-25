@@ -25,20 +25,22 @@
 from datetime import datetime
 import PullReading
 import RS_Database
-
+import time
 
 def main():
 	RS_Database.connect_to_db()
 	
-	for x in range(1,3):
-		RS_Database.write_reading(
-								datetime.now(), 
-								x, 
-								PullReading.GetReading(x)
-								 )
-	
-	RS_Database.commit_DB()
-	
+	while True:
+		for x in range(1,4):
+			RS_Database.write_reading(
+									datetime.now(), 
+									x, 
+									PullReading.GetReading(x)
+									 )
+		
+		RS_Database.commit_DB()
+		time.sleep(60*5)
+		
 	return 0
 
 
