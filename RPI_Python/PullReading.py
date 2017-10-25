@@ -35,13 +35,19 @@ pin_DHT11 = 4
 SPI_PORT   = 0
 SPI_DEVICE = 0
 PH_CHANNEL = 0
-PH_OFFSET = 0
+PH_OFFSET = -0.85
 mcp = Adafruit_MCP3008.MCP3008(spi=SPI.SpiDev(SPI_PORT, SPI_DEVICE))
 
 def adc_to_ph(input):
 	
-	volts = input * (5 / 1024) # Assumes the probe is running off five volts
+	print "ADC input is " + str(input)
+	
+	volts = input
+	volts *= 3.3
+	volts /= 1024.0 # ADC range 0-1023
 	ph = 3.5 * volts + PH_OFFSET
+	
+	print "Volts is " + str(volts) + " and pH is " + str(ph)
 	
 	return ph
 
