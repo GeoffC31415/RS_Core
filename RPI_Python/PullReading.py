@@ -26,6 +26,7 @@ import random
 import Adafruit_DHT
 import Adafruit_GPIO.SPI as SPI
 import Adafruit_MCP3008
+import time
 
 # DHT setup
 sensor_DHT11 = Adafruit_DHT.DHT11
@@ -53,18 +54,38 @@ def adc_to_ph(input):
 
 def GetReading(sensorID):
 	
+	new_reading = -1
+	loopcount = 0
+	
 	if sensorID == 1:
-		humidity, temperature = Adafruit_DHT.read_retry(sensor_DHT11, pin_DHT11)
-		if humidity is not None:
-			new_reading = humidity
+		humidity = 101
+		# Occasionally we get a crazy reading like 160%
+		# give it up to twenty goes to get one in range
+		while (humidity > 100) and (loopcount < 20):
+			if loopcount > 0:
+				time.sleep(0.05)
+			humidity, temperature = Adafruit_DHT.read_retry(sensor_DHT11, pin_DHT11)
+			if humidity is not None:
+				new_reading = humidity
+			loopcount += 1
+		
 	elif sensorID == 2:
 		humidity, temperature = Adafruit_DHT.read_retry(sensor_DHT11, pin_DHT11)
 		if temperature is not None:
 			new_reading = temperature
+			
 	elif sensorID == 3:
-		new_reading = adc_to_ph(mcp.read_adc(PH_CHANNEL))
-	
-	if new_reading is not None:
-		return new_reading
+		# Do ten readings in 2 seconds to average noise
+		readings = []
+		for x in range(0, 10):
+			readings.append(mcp.read_adc(PH_CHANNEL))
+			time.sleep(0.2)
+		# Average readings		
+		avg_val = sum(readings)/len(readings)
+		print "Average pH sensor reading " + str(avg_val)
+		new_reading = adc_to_ph(avg_val)
+		
 	else:
-		return -1
+		new_reading = -1
+		
+	return new_reading

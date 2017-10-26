@@ -31,9 +31,10 @@ def main():
 	RS_Database.connect_to_db()
 	
 	while True:
+		curtime = datetime.now()
 		for x in range(1,4):
 			RS_Database.write_reading(
-									datetime.now(), 
+									curtime, 
 									x, 
 									PullReading.GetReading(x)
 									 )
