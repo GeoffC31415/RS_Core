@@ -26,11 +26,17 @@ from datetime import datetime
 import PullReading
 import RS_Database
 import time
+import os
+from picamera import PiCamera
 
 def main():
 	RS_Database.connect_to_db()
+	camera = PiCamera()
+	loopcounter = 0
 	
 	while True:
+		
+		# Log the sensor readings to the database
 		curtime = datetime.now()
 		for x in range(1,4):
 			RS_Database.write_reading(
@@ -40,6 +46,20 @@ def main():
 									 )
 		
 		RS_Database.commit_DB()
+		
+		if loopcounter % 12 == 0:
+			# Archive the most recent image
+			curfile = '/var/www/html/RS_Website/images/image_recent.jpg'
+			arcfile = '/var/www/html/RS_Website/images/image_' + time.strftime("%Y%m%d%H%M%S") + '.jpg'
+			try:
+				os.rename(curfile, arcfile)
+			except:
+				print "File rename failed"
+			# Record an image of the setup
+			camera.capture(curfile)
+			print "Image captured, loop counter is " + str(loopcounter)
+		
+		loopcounter += 1
 		time.sleep(60*5)
 		
 	return 0
