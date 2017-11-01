@@ -61,7 +61,7 @@ def GetReading(sensorID):
 		humidity = 101
 		# Occasionally we get a crazy reading like 160%
 		# give it up to twenty goes to get one in range
-		while (humidity > 100) and (loopcount < 20):
+		while (humidity > 100) and (loopcount < 20) and (humidity<0):
 			if loopcount > 0:
 				time.sleep(0.05)
 			humidity, temperature = Adafruit_DHT.read_retry(sensor_DHT11, pin_DHT11)
@@ -70,10 +70,21 @@ def GetReading(sensorID):
 			loopcount += 1
 		
 	elif sensorID == 2:
-		humidity, temperature = Adafruit_DHT.read_retry(sensor_DHT11, pin_DHT11)
-		if temperature is not None:
-			new_reading = temperature
-			
+		# Occasionally we get a reading about half of the true reading
+		# Happens about 5% of the time
+		# To mitigate, take three readings and pick the middle one
+		
+		temparray = []
+		
+		for x in range(0,3):
+			humidity, temperature = Adafruit_DHT.read_retry(sensor_DHT11, pin_DHT11)
+			if temperature is not None:
+				new_reading = temperature
+			temparray.append(new_reading)
+		
+		temparray.sort()
+		new_reading = temparray[1]
+		
 	elif sensorID == 3:
 		# Do ten readings in 2 seconds to average noise
 		readings = []
