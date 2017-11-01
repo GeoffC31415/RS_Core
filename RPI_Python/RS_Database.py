@@ -54,10 +54,15 @@ def write_reading(logtime, sensorID, reading):
 				""".format(
 							logtime=logtime, 
 							sensorID=sensorID, 
-							reading=reading
+							reading='{0:.3f}'.format(reading)
 						   )
 	
-	print ' '.join(qrystr.split())
+	printstr =	"Writing {reading} for sensor {sensorID}".format(
+							sensorID=sensorID, 
+							reading='{0:.3f}'.format(reading)
+						   )
+	
+	print printstr
 	
 	try:
 		cur.execute(qrystr)

@@ -41,14 +41,12 @@ mcp = Adafruit_MCP3008.MCP3008(spi=SPI.SpiDev(SPI_PORT, SPI_DEVICE))
 
 def adc_to_ph(input):
 	
-	print "ADC input is " + str(input)
-	
 	volts = input
 	volts *= 3.3
 	volts /= 1024.0 # ADC range 0-1023
 	ph = 3.5 * volts + PH_OFFSET
 	
-	print "Volts is " + str(volts) + " and pH is " + str(ph)
+	# print "Volts is " + str(volts) + " and pH is " + str(ph)
 	
 	return ph
 
@@ -61,7 +59,7 @@ def GetReading(sensorID):
 		humidity = 101
 		# Occasionally we get a crazy reading like 160%
 		# give it up to twenty goes to get one in range
-		while (humidity > 100) and (loopcount < 20) and (humidity<0):
+		while ((humidity > 100) or (humidity < 0) or (loopcount > 20)):
 			if loopcount > 0:
 				time.sleep(0.05)
 			humidity, temperature = Adafruit_DHT.read_retry(sensor_DHT11, pin_DHT11)
@@ -93,7 +91,6 @@ def GetReading(sensorID):
 			time.sleep(0.2)
 		# Average readings		
 		avg_val = sum(readings)/len(readings)
-		print "Average pH sensor reading " + str(avg_val)
 		new_reading = adc_to_ph(avg_val)
 		
 	else:
