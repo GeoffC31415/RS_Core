@@ -49,16 +49,16 @@ def main(args):
 	try:
 		GPIO.output(pinList[0], GPIO.LOW)
 		print "ONE"
-		time.sleep(SleepTimeL); 
+		#time.sleep(SleepTimeL); 
 		GPIO.output(pinList[1], GPIO.LOW)
 		print "TWO"
-		time.sleep(SleepTimeL);  
-		GPIO.output(pinList[2], GPIO.LOW)
+		#time.sleep(SleepTimeL);  
+		#GPIO.output(pinList[2], GPIO.LOW)
 		print "THREE"
-		time.sleep(SleepTimeL);
-		GPIO.output(pinList[3], GPIO.LOW)
+		#time.sleep(SleepTimeL);
+		#GPIO.output(pinList[3], GPIO.LOW)
 		print "FOUR"
-		time.sleep(SleepTimeL);
+		time.sleep(SleepTimeL * 10);
 		GPIO.cleanup()
 		print "Good bye!"
 
