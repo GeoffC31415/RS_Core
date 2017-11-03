@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-#  SetRelays.py
+#  LightsOn.py
 #  
 #  Copyright 2017  <pi@raspberrypi>
 #  
@@ -26,44 +26,19 @@
 def main(args):
 	
 	import RPi.GPIO as GPIO
-	import time
 	
 	GPIO.setmode(GPIO.BCM)
 
 	# init list with pin numbers
-	pumpList = [21, 20, 16, 12]
-	lightList = [23,24]
+	#pumpList = [21, 20, 16, 12]
+	lightList = [13,19]
 
 	# loop through pins and set mode and state to 'high'
 	# HIGH is off, LOW is ON
-	for i in pumpList: 
-		GPIO.setup(i, GPIO.OUT) 
-		GPIO.output(i, GPIO.HIGH)
 	for i in lightList: 
 		GPIO.setup(i, GPIO.OUT) 
 		GPIO.output(i, GPIO.HIGH)
 
-	# set relays
-	try:
-		# Endless loop until interrupted
-		while 1:
-			GPIO.output(pinList[0], GPIO.LOW)
-			#GPIO.output(pinList[1], GPIO.LOW) 
-			#GPIO.output(pinList[2], GPIO.LOW)
-			#GPIO.output(pinList[3], GPIO.LOW)
-			#time.sleep(2)
-			#GPIO.output(pinList[0], GPIO.LOW)
-			#GPIO.output(pinList[1], GPIO.HIGH) 
-			#GPIO.output(pinList[2], GPIO.LOW)
-			#GPIO.output(pinList[3], GPIO.HIGH)
-			#time.sleep(2)
-
-	# End program cleanly with keyboard
-	except KeyboardInterrupt:
-		print "  Quit"
-
-		# Reset GPIO settings (turns relays off)
-		GPIO.cleanup()
 	return 0
 
 if __name__ == '__main__':
