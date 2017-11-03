@@ -56,22 +56,21 @@ def GetReading(sensorID):
 	loopcount = 0
 	
 	if sensorID == 1:
-		humidity = 101
-		# Occasionally we get a crazy reading like 160%
-		# give it up to twenty goes to get one in range
-		while ((humidity > 100) or (humidity < 0) or (loopcount > 20)):
-			if loopcount > 0:
-				time.sleep(0.05)
+		# Get median of three
+		humarray = []
+		
+		for x in range(0,3):
 			humidity, temperature = Adafruit_DHT.read_retry(sensor_DHT11, pin_DHT11)
 			if humidity is not None:
 				new_reading = humidity
-			loopcount += 1
+			humarray.append(new_reading)
+			time.sleep(1)
+		
+		humarray.sort()
+		new_reading = humarray[1]
 		
 	elif sensorID == 2:
-		# Occasionally we get a reading about half of the true reading
-		# Happens about 5% of the time
-		# To mitigate, take three readings and pick the middle one
-		
+		# Get median of three readings again
 		temparray = []
 		
 		for x in range(0,3):
@@ -79,7 +78,8 @@ def GetReading(sensorID):
 			if temperature is not None:
 				new_reading = temperature
 			temparray.append(new_reading)
-		
+			time.sleep(1)
+			
 		temparray.sort()
 		new_reading = temparray[1]
 		
