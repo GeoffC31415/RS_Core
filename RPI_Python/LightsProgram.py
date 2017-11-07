@@ -38,8 +38,7 @@ def main(args):
 	lightList = [21]
 	heaterList = [16]
 	pumpList = [12]
-	lightList = [13,19]
-
+	
 	# Pull times from settings database
 	# Need to basically do an index-match on ons and offs
 	#lightsOn = RS_Database.getLightsTimes(1)
@@ -66,8 +65,8 @@ def main(args):
 	db_dirty = 0
 	
 	# Timings
-	STARTHOUR_LIGHTS = 8
-	STOPHOUR_LIGHTS = 20
+	STARTHOUR_LIGHTS = 20
+	STOPHOUR_LIGHTS = 8
 	STARTHOUR_PUMP = 0
 	STOPHOUR_PUMP = 24
 	STARTHOUR_HEATER = 0
@@ -81,7 +80,8 @@ def main(args):
 		curtime = datetime.now().time()
 		curdt = datetime.now()
 
-		if ((curtime.hour >= STARTHOUR_LIGHTS) and (curtime.hour < STOPHOUR_LIGHTS)):
+		# Lights Loop (spanning midnight)
+		if ((curtime.hour >= STARTHOUR_LIGHTS) or (curtime.hour < STOPHOUR_LIGHTS)):
 			if lightstatus == 0:
 				print 'Setting lights to on...'
 				for i in lightList:
