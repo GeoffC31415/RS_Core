@@ -33,23 +33,39 @@ def main(args):
 
 	# init list with pin numbers
 	#pumpList = [21, 20, 16, 12]
-	lightList = [13,19]
-
+	lightList = [21]
+	heaterList = [16]
+	pumpList = [12]
+	
 	# loop through pins and set mode and state to 'high'
 	# HIGH is off, LOW is ON
 	for i in lightList: 
 		GPIO.setup(i, GPIO.OUT) 
 		GPIO.output(i, GPIO.HIGH)
-
+	for i in heaterList: 
+		GPIO.setup(i, GPIO.OUT) 
+		GPIO.output(i, GPIO.HIGH)
+	for i in pumpList: 
+		GPIO.setup(i, GPIO.OUT) 
+		GPIO.output(i, GPIO.HIGH)
+			
+	# Lightstatus holds the current light values to prevent constant spam of the messages
+	# 0 is off, 1 is on
+	# preset to 0 as the previous loop turns lights off
+	lightstatus = 0
+	heaterstatus = 0
+	pumpstatus = 0
+	# Grab the lighting times from the settings database
+	
+	
 	# main loop
 	#
 	# Check time every minute and trigger lights on and off
 	
-	lightstatus = 0
-	
 	while 1:
 		curtime = datetime.now().time()
-		
+	
+		# Lights Loop
 		if ((curtime.hour >= 8) and (curtime.hour < 20)):
 			if lightstatus == 0:
 				print 'Setting lights to on...'
@@ -65,6 +81,39 @@ def main(args):
 				print 'Lights off, currrent time is ' + str(curtime)
 				lightstatus = 0
 				
+				
+		# Heater Loop
+		if 	((curtime.hour >= 0) and (curtime.hour < 24)):
+			if heaterstatus == 0:
+				print 'Setting heater to on...'
+				for i in heaterList:
+					GPIO.output(i, GPIO.LOW)
+				print 'Heater setting on, current time is ' + str(curtime)
+				heaterstatus = 1
+		else:
+			if heaterstatus == 1:
+				print 'Setting heater to off...'
+				for i in heaterList:
+					GPIO.output(i, GPIO.HIGH)
+				print 'Heater setting off, current time is ' + str(curtime)
+				heaterstatus = 0
+
+		# Pump Loop
+		if 	((curtime.hour >= 0) and (curtime.hour < 24)):
+			if pumpstatus == 0:
+				print 'Setting pump to on...'
+				for i in pumpList:
+					GPIO.output(i, GPIO.LOW)
+				print 'Pump setting on, current time is ' + str(curtime)
+				pumpstatus = 1
+		else:
+			if pumpstatus == 1:
+				print 'Setting pump to off...'
+				for i in pumpList:
+					GPIO.output(i, GPIO.HIGH)
+				print 'Pump setting off, current time is ' + str(curtime)
+				pumpstatus = 0
+						
 		time.sleep(60)
 		
 	return 0

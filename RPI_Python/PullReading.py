@@ -30,7 +30,7 @@ import time
 
 # DHT setup
 sensor_DHT11 = Adafruit_DHT.DHT11
-pin_DHT11 = 4
+DHT_Pins = [4,17,27,22]
 
 # pH probe setup on SPI
 SPI_PORT   = 0
@@ -55,35 +55,7 @@ def GetReading(sensorID):
 	new_reading = -1
 	loopcount = 0
 	
-	if sensorID == 1:
-		# Get median of three
-		humarray = []
-		
-		for x in range(0,3):
-			humidity, temperature = Adafruit_DHT.read_retry(sensor_DHT11, pin_DHT11)
-			if humidity is not None:
-				new_reading = humidity
-			humarray.append(new_reading)
-			time.sleep(1)
-		
-		humarray.sort()
-		new_reading = humarray[1]
-		
-	elif sensorID == 2:
-		# Get median of three readings again
-		temparray = []
-		
-		for x in range(0,3):
-			humidity, temperature = Adafruit_DHT.read_retry(sensor_DHT11, pin_DHT11)
-			if temperature is not None:
-				new_reading = temperature
-			temparray.append(new_reading)
-			time.sleep(1)
-			
-		temparray.sort()
-		new_reading = temparray[1]
-		
-	elif sensorID == 3:
+	if sensorID == 9:
 		# Do ten readings in 2 seconds to average noise
 		readings = []
 		for x in range(0, 10):
@@ -97,3 +69,35 @@ def GetReading(sensorID):
 		new_reading = -1
 		
 	return new_reading
+
+def GetDHTReading(sensorID):
+	
+	hum_reading = -1
+	temp_reading = -1
+	loopcount = 0
+		
+	if sensorID <= len(DHT_Pins):
+		# Get median of five
+		humarray = []
+		temparray = []
+		
+		readpin = DHT_Pins[sensorID-1]
+		
+		for x in range(0,5):
+			humidity, temperature = Adafruit_DHT.read_retry(sensor_DHT11, readpin)
+			if humidity is not None:
+				hum_reading = humidity
+			if temperature is not None:
+				temp_reading = temperature
+			humarray.append(hum_reading)
+			temparray.append(temp_reading)
+			time.sleep(1)
+		
+		humarray.sort()
+		temparray.sort()
+		hum_reading = humarray[2]
+		temp_reading = temparray[2]
+		
+	readings = [hum_reading, temp_reading]	
+		
+	return readings

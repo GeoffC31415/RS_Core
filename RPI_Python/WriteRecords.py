@@ -36,9 +36,26 @@ def main():
 	
 	while True:
 		
-		# Log the sensor readings to the database
 		curtime = datetime.now()
-		for x in range(1,4):
+		
+		# DHT sensors. Numbers result in logging of two readings for each sensor
+		# Array lists sensornums according to the Sensors DB Table
+		# These must all be listed ahead of analog sensors for the x-formula to work
+		for x in [1,2,4]:
+			DHT_Readings = PullReading.GetDHTReading(x)
+			RS_Database.write_reading(
+									curtime, 
+									2*x - 1, 
+									DHT_Readings[0]
+									 )
+			RS_Database.write_reading(
+									curtime, 
+									2*x, 
+									DHT_Readings[1]
+									 )
+		# Analog sensors
+		# Array lists sensornums according to the Sensors DB Table
+		for x in [9]:
 			RS_Database.write_reading(
 									curtime, 
 									x, 
@@ -67,3 +84,4 @@ def main():
 
 if __name__ == '__main__':
 	main()
+	

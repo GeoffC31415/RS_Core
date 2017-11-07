@@ -47,29 +47,32 @@ def connect_to_db():
 
 def write_reading(logtime, sensorID, reading):
 	
-	qrystr = 	"""INSERT INTO SensorReadings
-						(LogTime, SensorID, Reading)
-					VALUES
-						("{logtime}", {sensorID}, {reading}) 
-				""".format(
-							logtime=logtime, 
-							sensorID=sensorID, 
-							reading='{0:.3f}'.format(reading)
-						   )
-	
-	printstr =	"Writing {reading} for sensor {sensorID}".format(
-							sensorID=sensorID, 
-							reading='{0:.3f}'.format(reading)
-						   )
-	
-	print printstr
-	
-	try:
-		cur.execute(qrystr)
-		
-	except:
-		print "DB execute error"
-	
+	# -1 is our error reading, so skip if it's that.
+	if reading != -1:
+
+		qrystr = 	"""INSERT INTO SensorReadings
+							(LogTime, SensorID, Reading)
+						VALUES
+							("{logtime}", {sensorID}, {reading}) 
+					""".format(
+								logtime=logtime, 
+								sensorID=sensorID, 
+								reading='{0:.3f}'.format(reading)
+							   )
+
+		printstr =	"Writing {reading} for sensor {sensorID}".format(
+								sensorID=sensorID, 
+								reading='{0:.3f}'.format(reading)
+							   )
+
+		print printstr
+
+		try:
+			cur.execute(qrystr)
+			
+		except:
+			print "DB execute error"
+
 	return 0
 	
 def commit_DB():
