@@ -28,19 +28,25 @@ def main(args):
 	import RPi.GPIO as GPIO
 	from datetime import datetime
 	import time
+	import RS_Database
 	
 	GPIO.setmode(GPIO.BCM)
-
+	RS_Database.connect_to_db()
+	
 	# init list with pin numbers
-	#pumpList = [21, 20, 16, 12]
 	lightList = [21]
 	heaterList = [16]
 	pumpList = [12]
+	lightList = [13,19]
+
+	# Pull times from settings database
+	lightsOn = RS_Database.getLightsTimes(1)
+	lightsOff = RS_Database.getLightsTimes(0)
 	
 	# loop through pins and set mode and state to 'high'
 	# HIGH is off, LOW is ON
-	for i in lightList: 
-		GPIO.setup(i, GPIO.OUT) 
+	for i in lightList:
+		GPIO.setup(i, GPIO.OUT)
 		GPIO.output(i, GPIO.HIGH)
 	for i in heaterList: 
 		GPIO.setup(i, GPIO.OUT) 
@@ -66,6 +72,7 @@ def main(args):
 		curtime = datetime.now().time()
 	
 		# Lights Loop
+		checktime = datetime.time(curtime.hour, curtime.minute)
 		if ((curtime.hour >= 8) and (curtime.hour < 20)):
 			if lightstatus == 0:
 				print 'Setting lights to on...'
@@ -80,7 +87,6 @@ def main(args):
 					GPIO.output(i, GPIO.HIGH)
 				print 'Lights off, currrent time is ' + str(curtime)
 				lightstatus = 0
-				
 				
 		# Heater Loop
 		if 	((curtime.hour >= 0) and (curtime.hour < 24)):
@@ -114,7 +120,7 @@ def main(args):
 				print 'Pump setting off, current time is ' + str(curtime)
 				pumpstatus = 0
 						
-		time.sleep(60)
+		time.sleep(30)
 		
 	return 0
 
