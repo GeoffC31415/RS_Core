@@ -64,7 +64,6 @@ def GetReading(sensorID):
 		# Average readings		
 		avg_val = sum(readings)/len(readings)
 		new_reading = adc_to_ph(avg_val)
-		
 	else:
 		new_reading = -1
 		

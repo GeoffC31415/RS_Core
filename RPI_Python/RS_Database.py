@@ -76,6 +76,27 @@ def write_reading(logtime, sensorID, reading):
 
 	return 0
 	
+def log_relay(curtime, relay, state):
+	
+	qrystr = """
+				INSERT INTO RelayLogs
+					(LogTime, RelayName, State)
+				VALUES
+					("{curtime}", "{relay}", {state})
+			""".format	(
+						curtime=curtime,
+						relay=relay,
+						state=state
+						)
+	
+	try:
+		cur.execute(qrystr)
+		
+	except:
+		print "DB execute error"
+	
+	return 0
+	
 def commit_DB():
 	
 	try:

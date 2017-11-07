@@ -39,8 +39,11 @@ def main():
 		curtime = datetime.now()
 		
 		# DHT sensors. Numbers result in logging of two readings for each sensor
-		# Array lists sensornums according to the Sensors DB Table
-		# These must all be listed ahead of analog sensors for the x-formula to work
+		
+		# For-Loop array lists which slot in the breadboard to read
+		# Pin mappings are given in PullReading.py
+		
+		# All DHT11's must all be listed as a block ahead of analog sensors for the 2*x-formula to work
 		for x in [1,2,4]:
 			DHT_Readings = PullReading.GetDHTReading(x)
 			if DHT_Readings[0] < 100: #Scrap error highs
@@ -55,8 +58,10 @@ def main():
 										2*x, 
 										DHT_Readings[1]
 										 )
+										 
 		# Analog sensors
-		# Array lists sensornums according to the Sensors DB Table
+		# For-Loop array lists sensornums according to the Sensors DB Table
+		# The analog pin into the MCP3008 is given in PullReading.py
 		for x in [9]:
 			RS_Database.write_reading(
 									curtime, 
@@ -64,8 +69,11 @@ def main():
 									PullReading.GetReading(x)
 									 )
 		
+		# Queries are written and prepped - commit as a block to DB
 		RS_Database.commit_DB()
 		
+		
+		# PiCamera - replace photo
 		if loopcounter % 12 == 0:
 			# Archive the most recent image
 			curfile = '/var/www/html/RS_Website/images/image_recent.jpg'
