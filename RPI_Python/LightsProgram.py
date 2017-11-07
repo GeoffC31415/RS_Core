@@ -31,6 +31,7 @@ def main(args):
 	import RS_Database
 	
 	GPIO.setmode(GPIO.BCM)
+	GPIO.setwarnings(False)
 	RS_Database.connect_to_db()
 	
 	# init list with pin numbers
@@ -40,8 +41,9 @@ def main(args):
 	lightList = [13,19]
 
 	# Pull times from settings database
-	lightsOn = RS_Database.getLightsTimes(1)
-	lightsOff = RS_Database.getLightsTimes(0)
+	# Need to basically do an index-match on ons and offs
+	#lightsOn = RS_Database.getLightsTimes(1)
+	#lightsOff = RS_Database.getLightsTimes(0)
 	
 	# loop through pins and set mode and state to 'high'
 	# HIGH is off, LOW is ON
@@ -61,8 +63,6 @@ def main(args):
 	lightstatus = 0
 	heaterstatus = 0
 	pumpstatus = 0
-	# Grab the lighting times from the settings database
-	
 	
 	# main loop
 	#
@@ -70,9 +70,7 @@ def main(args):
 	
 	while 1:
 		curtime = datetime.now().time()
-	
-		# Lights Loop
-		checktime = datetime.time(curtime.hour, curtime.minute)
+
 		if ((curtime.hour >= 8) and (curtime.hour < 20)):
 			if lightstatus == 0:
 				print 'Setting lights to on...'
