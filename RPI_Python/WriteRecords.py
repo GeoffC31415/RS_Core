@@ -43,16 +43,18 @@ def main():
 		# These must all be listed ahead of analog sensors for the x-formula to work
 		for x in [1,2,4]:
 			DHT_Readings = PullReading.GetDHTReading(x)
-			RS_Database.write_reading(
-									curtime, 
-									2*x - 1, 
-									DHT_Readings[0]
-									 )
-			RS_Database.write_reading(
-									curtime, 
-									2*x, 
-									DHT_Readings[1]
-									 )
+			if DHT_Readings[0] < 100: #Scrap error highs
+				RS_Database.write_reading(
+										curtime, 
+										2*x - 1, 
+										DHT_Readings[0]
+										 )
+			if DHT_Readings[1] < 50: #Scrap error highs
+				RS_Database.write_reading(
+										curtime, 
+										2*x, 
+										DHT_Readings[1]
+										 )
 		# Analog sensors
 		# Array lists sensornums according to the Sensors DB Table
 		for x in [9]:

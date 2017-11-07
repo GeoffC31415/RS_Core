@@ -23,6 +23,7 @@
 #  
 
 import MySQLdb
+from datetime import datetime
 
 servername 	= "localhost"
 username 	= "root"
@@ -79,7 +80,7 @@ def commit_DB():
 	
 	try:
 		db.commit()
-		print "Data committed"
+		print "Data committed   " + format(datetime.now(),'%d-%m-%y %H:%M')
 	
 	except:
 		print "DB commit error"
