@@ -3,7 +3,6 @@ import sys
 import datetime
 import PullReading
 from influxdb import InfluxDBClient
-import RPi.GPIO as GPIO
  
 # Set this variables, influxDB should be localhost on Pi
 host = "localhost"
