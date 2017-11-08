@@ -97,6 +97,9 @@ def GetDHTReading(sensorID):
 		hum_reading = humarray[2]
 		temp_reading = temparray[2]
 		
+		if hum_reading > 100:
+			hum_reading = 0
+		
 	readings = [hum_reading, temp_reading]	
 		
 	return readings
