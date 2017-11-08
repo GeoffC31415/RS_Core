@@ -38,40 +38,45 @@ client = InfluxDBClient(host, port, user, password, dbname)
 # Run until keyboard out
 try:
     while True:
-        # Gather readings
-        print "Gathering readings... " + str(time.ctime())
-        DHT1	= PullReading.GetDHTReading(1)
-        DHT2 	= PullReading.GetDHTReading(2)
-        DHT4 	= PullReading.GetDHTReading(4)
-        pH		= PullReading.GetReading(9)
-        iso 	= time.ctime()
-        print "Readings retrieved    " + str(time.ctime())
+		# Gather readings
+		print str(time.ctime()) + "    Gathering readings"
+		DHT1	= PullReading.GetDHTReading(1)
+		DHT2 	= PullReading.GetDHTReading(2)
+		DHT4 	= PullReading.GetDHTReading(4)
+		pH		= PullReading.GetReading(9)
+		iso 	= time.ctime()
+		print str(time.ctime()) + "    Readings retrieved"
 
 		# Form JSON
-        json_body = [
-        {
-          "measurement": session,
-              "tags": {
-                  "run": runNo,
-                  },
-              "time": iso,
-              "fields": {
-                  "DHT1_Hum" : DHT1[0], 
-                  "DHT1_Temp" : DHT1[1], 
-                  "DHT2_Hum" : DHT2[0], 
-                  "DHT2_Temp" : DHT2[1], 
-                  "DHT4_Hum" : DHT4[0], 
-                  "DHT4_Temp" : DHT4[1], 
-                  "Reservoir pH" : pH
-              }
-          }
-        ]
- 
-        # Write JSON to InfluxDB
-        client.write_points(json_body)
-        print "Data Written: " + str(iso)
-        # Wait for next sample
-        time.sleep(interval)
+		json_body = [
+		{
+		  "measurement": session,
+			  "tags": {
+				  "run": runNo,
+				  },
+			  "time": iso,
+			  "fields": {
+				  "DHT1_Temp" : DHT1[1], 
+				  "DHT2_Temp" : DHT2[1], 
+				  "DHT4_Temp" : DHT4[1], 
+				  "Reservoir pH" : pH
+			  }
+		  }
+		]
+        # Do humidities seperately as they can be over 100
+        # We want blanks in those cases where it's out of range
+		if DHT1[0] < 100: 
+			json_body[0]['fields']["DHT1_Hum"] = DHT1[0]
+		if DHT2[0] < 100:
+			json_body[0]['fields']["DHT2_Hum"] = DHT2[0]
+		if DHT4[0] < 100:
+			json_body[0]['fields']["DHT3_Hum"] = DHT4[0]
+
+		# Write JSON to InfluxDB
+		client.write_points(json_body)
+		print str(iso) + "    Data Written"
+		# Wait for next sample
+		time.sleep(interval)
  
 except KeyboardInterrupt:
     pass

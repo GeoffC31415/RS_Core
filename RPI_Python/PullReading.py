@@ -76,13 +76,13 @@ def GetDHTReading(sensorID):
 	loopcount = 0
 		
 	if sensorID <= len(DHT_Pins):
-		# Get median of five
+		# Get median of four
 		humarray = []
 		temparray = []
 		
 		readpin = DHT_Pins[sensorID-1]
 		
-		for x in range(0,5):
+		for x in range(0,4):
 			humidity, temperature = Adafruit_DHT.read_retry(sensor_DHT11, readpin)
 			if humidity is not None:
 				hum_reading = humidity
@@ -90,15 +90,11 @@ def GetDHTReading(sensorID):
 				temp_reading = temperature
 			humarray.append(hum_reading)
 			temparray.append(temp_reading)
-			time.sleep(1)
 		
 		humarray.sort()
 		temparray.sort()
-		hum_reading = humarray[2]
-		temp_reading = temparray[2]
-		
-		if hum_reading > 100:
-			hum_reading = 0
+		hum_reading = humarray[1] #we want to skip the top two high readings
+		temp_reading = temparray[2] #we want to skip the bottom two low readings
 		
 	readings = [hum_reading, temp_reading]	
 		
