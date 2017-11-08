@@ -46,6 +46,7 @@ def main(args):
 	
 	# loop through pins and set mode and state to 'high'
 	# HIGH is off, LOW is ON
+	print 'Initialising all outputs to off...'
 	for i in lightList:
 		GPIO.setup(i, GPIO.OUT)
 		GPIO.output(i, GPIO.HIGH)
@@ -66,7 +67,7 @@ def main(args):
 	
 	# Timings
 	STARTHOUR_LIGHTS = 20
-	STOPHOUR_LIGHTS = 8
+	STOPHOUR_LIGHTS = 22
 	STARTHOUR_PUMP = 0
 	STOPHOUR_PUMP = 24
 	STARTHOUR_HEATER = 0
@@ -81,7 +82,7 @@ def main(args):
 		curdt = datetime.now()
 
 		# Lights Loop (spanning midnight)
-		if ((curtime.hour >= STARTHOUR_LIGHTS) or (curtime.hour < STOPHOUR_LIGHTS)):
+		if ((curtime.hour >= STARTHOUR_LIGHTS) and (curtime.hour < STOPHOUR_LIGHTS)):
 			if lightstatus == 0:
 				print 'Setting lights to on...'
 				for i in lightList:

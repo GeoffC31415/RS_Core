@@ -94,6 +94,7 @@ def log_relay(curtime, relay, state):
 		
 	except:
 		print "DB execute error"
+		print qrystr
 	
 	return 0
 	
