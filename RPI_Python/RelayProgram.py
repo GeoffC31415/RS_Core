@@ -60,9 +60,7 @@ db_dirty = 0
 client = InfluxDBClient(HOST, PORT, USER, PASSWORD, DBNAME)
 
 
-def archivePhoto():
-	curfile = '/var/www/html/RS_Website/images/image_recent.jpg'
-	arcfile = '/var/www/html/RS_Website/images/image_' + time.strftime("%Y%m%d%H%M%S") + '.jpg'
+def archivePhoto(curfile,arcfile):
 	try:
 		os.rename(curfile, arcfile)
 	except:
@@ -183,7 +181,9 @@ def main(args):
 			
 		if curdt > nextphototime:
 			if lightstatus:
-				archivePhoto()
+				curfile = '/var/www/html/RS_Website/images/image_recent.jpg'
+				arcfile = '/var/www/html/RS_Website/images/image_' + time.strftime("%Y%m%d%H%M%S") + '.jpg'
+				archivePhoto(curfile,arcfile)
 				camera.capture(curfile)
 				print str(time.ctime()) + '        IMAGE CAPTURED'
 				nextphototime = curdt + timedelta(hours=PICTUREINTERVALHRS)
