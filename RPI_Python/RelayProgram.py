@@ -98,10 +98,10 @@ def setLights(status, curdt):
 		
 		if status:
 			setPins(LIGHTLIST, GPIO.LOW)
-			print str(time.ctime()) + '    Lights on'
+			print str(time.ctime()) + '        LIGHTS ON'
 		else:
 			setPins(LIGHTLIST, GPIO.HIGH)
-			print str(time.ctime()) + '    Lights off'
+			print str(time.ctime()) + '        LIGHTS OFF'
 		
 		#Pause for photo light
 		time.sleep(5)
@@ -117,10 +117,10 @@ def setHeaters(status, curdt):
 		
 		if status:
 			setPins(HEATERLIST, GPIO.LOW)
-			print str(time.ctime()) + '    Heater on'
+			print str(time.ctime()) + '        HEATER ON'
 		else:
 			setPins(HEATERLIST, GPIO.HIGH)
-			print str(time.ctime()) + '    Heater off'
+			print str(time.ctime()) + '        HEATER OFF'
 	return 0
 	
 def setPumps(status, curdt):
@@ -133,10 +133,10 @@ def setPumps(status, curdt):
 		
 		if status:
 			setPins(PUMPLIST, GPIO.LOW)
-			print str(time.ctime()) + '    Pump on'
+			print str(time.ctime()) + '        PUMP ON'
 		else:
 			setPins(PUMPLIST, GPIO.HIGH)
-			print str(time.ctime()) + '    Pump off'
+			print str(time.ctime()) + '        PUMP OFF'
 	return 0
 
 def setPins(pinlist, gpstatus):
@@ -185,7 +185,7 @@ def main(args):
 			if lightstatus:
 				archivePhoto()
 				camera.capture(curfile)
-				print str(time.ctime()) + '    Image captured'
+				print str(time.ctime()) + '        IMAGE CAPTURED'
 				nextphototime = curdt + timedelta(hours=PICTUREINTERVALHRS)
 			
 		time.sleep(30)
