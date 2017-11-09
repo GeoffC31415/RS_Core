@@ -47,7 +47,8 @@ SPI_PORT   = 0
 SPI_DEVICE = 0
 PH_CHANNEL = 0
 EC_CHANNEL = 1
-PH_OFFSET = -0.85
+PH_OFFSET = 0
+PH_CAL = 1 / 1.583
 EC_OFFSET = 0
 EC_TEMP_COMP = 1.0
 mcp = Adafruit_MCP3008.MCP3008(spi=SPI.SpiDev(SPI_PORT, SPI_DEVICE))
@@ -57,7 +58,7 @@ def adc_to_ph(input):
 	volts = input
 	volts *= 3.3
 	volts /= 1024.0 # ADC range 0-1023
-	ph = 3.5 * volts + PH_OFFSET
+	ph = 3.5 * PH_CAL * volts + PH_OFFSET
 	
 	# print "Volts is " + str(volts) + " and pH is " + str(ph)
 	
@@ -66,7 +67,7 @@ def adc_to_ph(input):
 def adc_to_ec(input):
 	
 	millivolts = input
-	millivolts *= 5000.0
+	millivolts *= 3300.0
 	millivolts /= 1024.0 # ADC range 0-1023
 	
 	# Adjust for temp

@@ -38,7 +38,7 @@ client = InfluxDBClient(host, port, user, password, dbname)
 try:
     while True:
 		# Gather readings
-		print str(time.ctime()) + "    Gathering readings"
+		print str(time.ctime()) + "    Gathering readings..."
 		DHT1		= PullReading.GetDHTReading(1)
 		DHT2 		= PullReading.GetDHTReading(2)
 		DHT4 		= PullReading.GetDHTReading(4)
@@ -73,11 +73,11 @@ try:
 		if DHT2[0] < 100:
 			json_body[0]['fields']["DHT2_Hum"] = DHT2[0]
 		if DHT4[0] < 100:
-			json_body[0]['fields']["DHT3_Hum"] = DHT4[0]
+			json_body[0]['fields']["DHT4_Hum"] = DHT4[0]
 
 		# Write JSON to InfluxDB
 		client.write_points(json_body)
-		print str(iso) + "    Data Written"
+		print str(iso) + "    Data Written to InfluxDB"
 		# Wait for next sample
 		time.sleep(interval)
  

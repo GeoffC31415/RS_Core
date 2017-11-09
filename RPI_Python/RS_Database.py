@@ -74,7 +74,7 @@ def write_reading(logtime, sensorID, reading):
 			cur.execute(qrystr)
 			
 		except:
-			print str(time.ctime()) + "    DB execute error"
+			print str(time.ctime()) + "    DB MySQL execute error"
 
 	return 0
 	
@@ -95,7 +95,7 @@ def log_relay(curtime, relay, state):
 		cur.execute(qrystr)
 		
 	except:
-		print str(time.ctime()) + "    DB execute error"
+		print str(time.ctime()) + "    DB MySQL execute error"
 		print qrystr
 	
 	return 0
@@ -104,9 +104,9 @@ def commit_DB():
 	
 	try:
 		db.commit()
-		print str(time.ctime()) + "    Data committed"
+		print str(time.ctime()) + "    Data committed to MySQL"
 	
 	except:
-		print str(time.ctime()) + "    DB commit error"
+		print str(time.ctime()) + "    DB MySQL commit error"
 	
 	return 0
