@@ -27,16 +27,29 @@ import Adafruit_DHT
 import Adafruit_GPIO.SPI as SPI
 import Adafruit_MCP3008
 import time
+import glob
+import subprocess
+import os
 
 # DHT setup
 sensor_DHT11 = Adafruit_DHT.DHT11
-DHT_Pins = [4,17,27,22]
+DHT_Pins = [4,17,0,22]
+
+# One-wire setup
+os.system('modprobe w1-gpio')
+os.system('modprobe w1-therm')
+base_dir = '/sys/bus/w1/devices/'
+device_folder = glob.glob(base_dir + '28*')[0]
+device_file = device_folder + '/w1_slave'
 
 # pH probe setup on SPI
 SPI_PORT   = 0
 SPI_DEVICE = 0
 PH_CHANNEL = 0
+EC_CHANNEL = 1
 PH_OFFSET = -0.85
+EC_OFFSET = 0
+EC_TEMP_COMP = 1.0
 mcp = Adafruit_MCP3008.MCP3008(spi=SPI.SpiDev(SPI_PORT, SPI_DEVICE))
 
 def adc_to_ph(input):
@@ -49,6 +62,45 @@ def adc_to_ph(input):
 	# print "Volts is " + str(volts) + " and pH is " + str(ph)
 	
 	return ph
+
+def adc_to_ec(input):
+	
+	millivolts = input
+	millivolts *= 5000.0
+	millivolts /= 1024.0 # ADC range 0-1023
+	
+	# Adjust for temp
+	millivolts = millivolts / EC_TEMP_COMP
+	
+	if millivolts < 448:
+		ec = 6.84*millivolts - 64.32
+	elif millivolts <1457:
+		ec = 6.98*millivolts - 127
+	else:
+		ec = 5.3 * millivolts + 2278
+	
+	# print "Volts is " + str(millivolts/1000.0) + " and EC is " + str(ec)
+	
+	return ec
+	
+def read_watertemp_raw():
+	catdata = subprocess.Popen(['cat',device_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+	out,err = catdata.communicate()
+	out_decode = out.decode('utf-8')
+	lines = out_decode.split('\n')
+	return lines
+
+def read_watertemp():
+	lines = read_watertemp_raw()
+	while lines[0].strip()[-3:] != 'YES':
+		time.sleep(0.2)
+		lines = read_watertemp_raw()
+	equals_pos = lines[1].find('t=')
+	if equals_pos != -1:
+		temp_string = lines[1][equals_pos+2:]
+		temp_c = float(temp_string) / 1000.0
+	EC_TEMP_COMP = 1.0 + 0.0185*(temp_c-25.0)
+	return temp_c
 
 def GetReading(sensorID):
 	
@@ -64,6 +116,16 @@ def GetReading(sensorID):
 		# Average readings		
 		avg_val = sum(readings)/len(readings)
 		new_reading = adc_to_ph(avg_val)
+	elif sensorID == 6:
+		new_reading = read_watertemp()
+	elif sensorID == 10:
+		readings = []
+		for x in range(0, 10):
+			readings.append(mcp.read_adc(EC_CHANNEL))
+			time.sleep(0.2)
+		# Average readings		
+		avg_val = sum(readings)/len(readings)
+		new_reading = adc_to_ec(avg_val)
 	else:
 		new_reading = -1
 		

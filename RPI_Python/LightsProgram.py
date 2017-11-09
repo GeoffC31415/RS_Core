@@ -99,10 +99,10 @@ def main(args):
 		# Lights Loop (if spanning midnight then the AND should be an OR - check if clause carefully)
 		if ((curtime.hour >= STARTHOUR_LIGHTS) and (curtime.hour < STOPHOUR_LIGHTS)):
 			if lightstatus == 0:
-				print str(curtime) + '    Setting lights to on...'
+				print str(time.ctime()) + '    Setting lights to on...'
 				for i in lightList:
 					GPIO.output(i, GPIO.LOW)
-				print str(curtime) + '    Lights on'
+				print str(time.ctime()) + '    Lights on'
 				lightstatus = 1
 				db.log_relay(curdt,'Lights',1)
 				db_dirty = 1
@@ -110,10 +110,10 @@ def main(args):
 				time.sleep(5)
 		else:
 			if lightstatus == 1:
-				print str(curtime) + '    Setting lights to off...'
+				print str(time.ctime()) + '    Setting lights to off...'
 				for i in lightList: 
 					GPIO.output(i, GPIO.HIGH)
-				print str(curtime) + '    Lights off'
+				print str(time.ctime()) + '    Lights off'
 				lightstatus = 0
 				db.log_relay(curdt,'Lights',0)
 				db_dirty = 1
@@ -124,19 +124,19 @@ def main(args):
 
 		if TARGETTEMP > curtemp[0]['mean']:
 			if heaterstatus == 0:
-				print str(curtime) + '    Setting heater to on...'
+				print str(time.ctime()) + '    Setting heater to on...'
 				for i in heaterList:
 					GPIO.output(i, GPIO.LOW)
-				print str(curtime) + '    Heater on, current temp is ' + str(curtemp[0]['mean'])
+				print str(time.ctime()) + '    Heater on, current temp is ' + str(curtemp[0]['mean'])
 				heaterstatus = 1
 				db.log_relay(curdt,'Heater',1)
 				db_dirty = 1
 		else:
 			if heaterstatus == 1:
-				print str(curtime) + '    Setting heater to off...'
+				print str(time.ctime()) + '    Setting heater to off...'
 				for i in heaterList:
 					GPIO.output(i, GPIO.HIGH)
-				print str(curtime) + '    Heater off, current temp is ' + str(curtemp[0]['mean'])
+				print str(time.ctime()) + '    Heater off, current temp is ' + str(curtemp[0]['mean'])
 				heaterstatus = 0
 				db.log_relay(curdt,'Heater',0)
 				db_dirty = 1
@@ -144,19 +144,19 @@ def main(args):
 		# Pump Loop
 		if 	((curtime.hour >= STARTHOUR_HEATER) and (curtime.hour < STOPHOUR_HEATER)):
 			if pumpstatus == 0:
-				print str(curtime) + '    Setting pump to on...'
+				print str(time.ctime()) + '    Setting pump to on...'
 				for i in pumpList:
 					GPIO.output(i, GPIO.LOW)
-				print str(curtime) + '    Pump on'
+				print str(time.ctime()) + '    Pump on'
 				pumpstatus = 1
 				db.log_relay(curdt,'Pump',1)
 				db_dirty = 1
 		else:
 			if pumpstatus == 1:
-				print str(curtime) + '    Setting pump to off...'
+				print str(time.ctime()) + '    Setting pump to off...'
 				for i in pumpList:
 					GPIO.output(i, GPIO.HIGH)
-				print str(curtime) + '    Pump off'
+				print str(time.ctime()) + '    Pump off'
 				pumpstatus = 0
 				db.log_relay(curdt,'Pump',0)
 				db_dirty = 1
@@ -173,10 +173,10 @@ def main(args):
 				try:
 					os.rename(curfile, arcfile)
 				except:
-					print str(curtime) + '    File rename failed'
+					print str(time.ctime()) + '    File rename failed'
 				# Record an image of the setup
 				camera.capture(curfile)
-				print str(curtime) + '    Image captured'
+				print str(time.ctime()) + '    Image captured'
 			nextphototime = curdt + timedelta(hours=PICTUREINTERVALHRS)
 			
 		time.sleep(30)

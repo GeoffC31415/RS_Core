@@ -39,11 +39,13 @@ try:
     while True:
 		# Gather readings
 		print str(time.ctime()) + "    Gathering readings"
-		DHT1	= PullReading.GetDHTReading(1)
-		DHT2 	= PullReading.GetDHTReading(2)
-		DHT4 	= PullReading.GetDHTReading(4)
-		pH		= PullReading.GetReading(9)
-		iso 	= time.ctime()
+		DHT1		= PullReading.GetDHTReading(1)
+		DHT2 		= PullReading.GetDHTReading(2)
+		DHT4 		= PullReading.GetDHTReading(4)
+		pH			= PullReading.GetReading(9)
+		waterTemp	= PullReading.GetReading(6)
+		ec			= PullReading.GetReading(10)
+		iso 		= time.ctime()
 		print str(time.ctime()) + "    Readings retrieved"
 
 		# Form JSON
@@ -58,7 +60,9 @@ try:
 				  "DHT1_Temp" : DHT1[1], 
 				  "DHT2_Temp" : DHT2[1], 
 				  "DHT4_Temp" : DHT4[1], 
-				  "Reservoir pH" : pH
+				  "Reservoir pH" : float(pH),
+				  "Water_Temp" : float(waterTemp),
+				  "Reservoir EC" : float(ec)
 			  }
 		  }
 		]

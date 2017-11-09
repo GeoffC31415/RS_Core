@@ -24,6 +24,7 @@
 
 import MySQLdb
 from datetime import datetime
+import time
 
 servername 	= "localhost"
 username 	= "root"
@@ -47,6 +48,7 @@ def connect_to_db():
 
 
 def write_reading(logtime, sensorID, reading):
+	curtime = datetime.now().time()
 	
 	# -1 is our error reading, so skip if it's that.
 	if reading != -1:
@@ -61,7 +63,7 @@ def write_reading(logtime, sensorID, reading):
 								reading='{0:.3f}'.format(reading)
 							   )
 
-		printstr =	"Writing {reading} for sensor {sensorID}".format(
+		printstr =	str(time.ctime()) + "    Writing {reading} for sensor {sensorID}".format(
 								sensorID=sensorID, 
 								reading='{0:.3f}'.format(reading)
 							   )
@@ -72,7 +74,7 @@ def write_reading(logtime, sensorID, reading):
 			cur.execute(qrystr)
 			
 		except:
-			print "DB execute error"
+			print str(time.ctime()) + "    DB execute error"
 
 	return 0
 	
@@ -93,7 +95,7 @@ def log_relay(curtime, relay, state):
 		cur.execute(qrystr)
 		
 	except:
-		print "DB execute error"
+		print str(time.ctime()) + "    DB execute error"
 		print qrystr
 	
 	return 0
@@ -102,9 +104,9 @@ def commit_DB():
 	
 	try:
 		db.commit()
-		print "Data committed   " + format(datetime.now(),'%d-%m-%y %H:%M')
+		print str(time.ctime()) + "    Data committed"
 	
 	except:
-		print "DB commit error"
+		print str(time.ctime()) + "    DB commit error"
 	
 	return 0
