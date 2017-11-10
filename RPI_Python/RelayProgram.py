@@ -32,15 +32,16 @@ from datetime import datetime, timedelta
 
 # Parameters
 PICTUREINTERVALHRS = 1
-HEATERQRY = 'select mean(DHT2_Temp) from dev where time > now() - 15m'
+TEMPQRY = 'select mean(DHT2_Temp) from dev where time > now() - 15m'
 TARGETTEMP = 21
-STARTHOUR_LIGHTS = 20
-STOPHOUR_LIGHTS = 8
+STARTHOUR_LIGHTS = 8
+STOPHOUR_LIGHTS = 20
 STARTHOUR_PUMP = 0
 STOPHOUR_PUMP = 24
 # Static lists with pin numbers
 LIGHTLIST = [21]
 HEATERLIST = [16]
+FANLIST = [20]
 PUMPLIST = [12]
 # InfluxDB settings
 HOST = "localhost"
@@ -54,6 +55,7 @@ DBNAME = "RS_Logs"
 lightstatus = 0
 heaterstatus = 0
 pumpstatus = 0
+fanstatus = 0
 db_dirty = 0
 
 # Create the InfluxDB object
@@ -82,10 +84,15 @@ def getPumpStatus(curtime):
 	return result
 
 def getHeaterStatus(target):
-	result = client.query(HEATERQRY)
+	result = client.query(TEMPQRY)
 	curtemp = list(result.get_points())
 	return (target > curtemp[0]['mean'])
-	
+
+def getFanStatus(target):
+	result = client.query(TEMPQRY)
+	curtemp = list(result.get_points())
+	return (target < curtemp[0]['mean'])
+			
 def setLights(status, curdt):
 	global lightstatus, db_dirty
 	
@@ -136,6 +143,22 @@ def setPumps(status, curdt):
 			setPins(PUMPLIST, GPIO.HIGH)
 			print str(time.ctime()) + '        PUMP OFF'
 	return 0
+	
+def setFans(status, curdt):
+	global fanstatus, db_dirty
+	
+	if status != fanstatus:
+		fanstatus = status
+		db.log_relay(curdt,'Fan',status)
+		db_dirty = 1
+		
+		if status:
+			setPins(FANLIST, GPIO.LOW)
+			print str(time.ctime()) + '        FAN ON'
+		else:
+			setPins(FANLIST, GPIO.HIGH)
+			print str(time.ctime()) + '        FAN OFF'
+	return 0
 
 def setPins(pinlist, gpstatus):
 	for i in pinlist:
@@ -162,7 +185,10 @@ def main(args):
 	for i in PUMPLIST: 
 		GPIO.setup(i, GPIO.OUT) 
 		GPIO.output(i, GPIO.HIGH)
-			
+	for i in FANLIST: 
+		GPIO.setup(i, GPIO.OUT) 
+		GPIO.output(i, GPIO.HIGH)
+		
 	camera = PiCamera()
 	
 	nextphototime = datetime.now() - timedelta(hours=1+PICTUREINTERVALHRS)
@@ -171,9 +197,12 @@ def main(args):
 		curtime = datetime.now().time()
 		curdt = datetime.now()
 
+		fans_setting = (getLightStatus(curtime) or getFanStatus(TARGETTEMP))
+		
 		setLights(getLightStatus(curtime), curdt)
 		setHeaters(getHeaterStatus(TARGETTEMP), curdt)
 		setPumps(getPumpStatus(curtime), curdt)
+		setFans(fans_setting, curdt)
 		
 		if db_dirty:
 			db.commit_DB()
