@@ -50,7 +50,8 @@ EC_CHANNEL = 1
 PH_OFFSET = 0
 PH_CAL = 1 / 1.583
 EC_OFFSET = 0
-EC_TEMP_COMP = 1.0
+EC_TEMP_COMP_COEFF = 21
+EC_TEMP_COMP_OFFSET = 1.0
 mcp = Adafruit_MCP3008.MCP3008(spi=SPI.SpiDev(SPI_PORT, SPI_DEVICE))
 
 def adc_to_ph(input):
@@ -70,15 +71,15 @@ def adc_to_ec(input):
 	millivolts *= 3300.0
 	millivolts /= 1024.0 # ADC range 0-1023
 	
-	# Adjust for temp
-	millivolts = millivolts / EC_TEMP_COMP
-	
 	if millivolts < 448:
 		ec = 6.84*millivolts - 64.32
 	elif millivolts <1457:
 		ec = 6.98*millivolts - 127
 	else:
 		ec = 5.3 * millivolts + 2278
+	
+	# Adjust for temp
+	ec = ec - EC_TEMP_COMP_OFFSET
 	
 	# print "Volts is " + str(millivolts/1000.0) + " and EC is " + str(ec)
 	
@@ -92,6 +93,8 @@ def read_watertemp_raw():
 	return lines
 
 def read_watertemp():
+	global EC_TEMP_COMP_OFFSET
+	
 	lines = read_watertemp_raw()
 	while lines[0].strip()[-3:] != 'YES':
 		time.sleep(0.2)
@@ -100,7 +103,7 @@ def read_watertemp():
 	if equals_pos != -1:
 		temp_string = lines[1][equals_pos+2:]
 		temp_c = float(temp_string) / 1000.0
-	EC_TEMP_COMP = 1.0 + 0.0185*(temp_c-25.0)
+	EC_TEMP_COMP_OFFSET = EC_TEMP_COMP_COEFF*(temp_c-25.0)
 	return temp_c
 
 def GetReading(sensorID):

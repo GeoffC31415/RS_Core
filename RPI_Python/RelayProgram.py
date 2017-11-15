@@ -24,7 +24,6 @@
 
 import RPi.GPIO as GPIO
 import time
-import RS_Database as db
 import os
 from influxdb import InfluxDBClient
 from picamera import PiCamera
@@ -32,10 +31,10 @@ from datetime import datetime, timedelta
 
 # Parameters
 PICTUREINTERVALHRS = 1
-TEMPQRY = 'select mean(DHT2_Temp) from dev where time > now() - 15m'
+TEMPQRY = 'select mean(DHT2_Temp) from dev where time > now() - 10m'
 TARGETTEMP = 21
-STARTHOUR_LIGHTS = 8
-STOPHOUR_LIGHTS = 20
+STARTHOUR_LIGHTS = 20
+STOPHOUR_LIGHTS = 8
 STARTHOUR_PUMP = 0
 STOPHOUR_PUMP = 24
 # Static lists with pin numbers
@@ -46,8 +45,8 @@ PUMPLIST = [12]
 # InfluxDB settings
 HOST = "localhost"
 PORT = 8086
-USER = "root"
-PASSWORD = "root"
+USER = "admin"
+PASSWORD = "admin"
 DBNAME = "RS_Logs"
 
 # Global status variables
@@ -56,8 +55,6 @@ lightstatus = 0
 heaterstatus = 0
 pumpstatus = 0
 fanstatus = 0
-db_dirty = 0
-
 # Create the InfluxDB object
 client = InfluxDBClient(HOST, PORT, USER, PASSWORD, DBNAME)
 
@@ -98,18 +95,16 @@ def setLights(status, curdt):
 	
 	if status != lightstatus:
 		lightstatus = status
-		db.log_relay(curdt,'Lights',status)
-		db_dirty = 1
-		
 		if status:
 			setPins(LIGHTLIST, GPIO.LOW)
 			print str(time.ctime()) + '        LIGHTS ON'
 		else:
 			setPins(LIGHTLIST, GPIO.HIGH)
 			print str(time.ctime()) + '        LIGHTS OFF'
-		
 		#Pause for photo light
 		time.sleep(5)
+		
+	influxlog(curdt,'Relay_Lights',status)
 	return 0
 	
 def setHeaters(status, curdt):
@@ -117,8 +112,6 @@ def setHeaters(status, curdt):
 	
 	if status != heaterstatus:
 		heaterstatus = status
-		db.log_relay(curdt,'Heater',status)
-		db_dirty = 1
 		
 		if status:
 			setPins(HEATERLIST, GPIO.LOW)
@@ -126,6 +119,7 @@ def setHeaters(status, curdt):
 		else:
 			setPins(HEATERLIST, GPIO.HIGH)
 			print str(time.ctime()) + '        HEATER OFF'
+	influxlog(curdt,'Relay_Heater',status)
 	return 0
 	
 def setPumps(status, curdt):
@@ -133,8 +127,6 @@ def setPumps(status, curdt):
 	
 	if status != pumpstatus:
 		pumpstatus = status
-		db.log_relay(curdt,'Pump',status)
-		db_dirty = 1
 		
 		if status:
 			setPins(PUMPLIST, GPIO.LOW)
@@ -142,6 +134,7 @@ def setPumps(status, curdt):
 		else:
 			setPins(PUMPLIST, GPIO.HIGH)
 			print str(time.ctime()) + '        PUMP OFF'
+	influxlog(curdt,'Relay_Pump',status)
 	return 0
 	
 def setFans(status, curdt):
@@ -149,8 +142,6 @@ def setFans(status, curdt):
 	
 	if status != fanstatus:
 		fanstatus = status
-		db.log_relay(curdt,'Fan',status)
-		db_dirty = 1
 		
 		if status:
 			setPins(FANLIST, GPIO.LOW)
@@ -158,6 +149,7 @@ def setFans(status, curdt):
 		else:
 			setPins(FANLIST, GPIO.HIGH)
 			print str(time.ctime()) + '        FAN OFF'
+	influxlog(curdt,'Relay_Fan',status)
 	return 0
 
 def setPins(pinlist, gpstatus):
@@ -165,13 +157,28 @@ def setPins(pinlist, gpstatus):
 		GPIO.output(i, gpstatus)
 	return 0
 
+def influxlog(curdt, measurementstr, state):
+	#Add it into InfluxDB
+	json_body = [
+		{
+		  "measurement": "dev",
+			  "time": curdt,
+			  "fields": {
+				  measurementstr : bool(state)
+			  }
+		  }
+		]
+	
+	# Write JSON to InfluxDB
+	client.write_points(json_body)
+	print str(time.ctime()) + '    Relay Data Written to InfluxDB'
+	return 0
+
 def main(args):
- 
-	global db_dirty
  
 	GPIO.setmode(GPIO.BCM)
 	GPIO.setwarnings(False)
-	db.connect_to_db()
+	curdt = datetime.now()
 	
 	# loop through pins and set mode and state to 'high'
 	# HIGH is off, LOW is ON
@@ -179,15 +186,19 @@ def main(args):
 	for i in LIGHTLIST:
 		GPIO.setup(i, GPIO.OUT)
 		GPIO.output(i, GPIO.HIGH)
+	influxlog(curdt,'Relay_Lights',False)
 	for i in HEATERLIST: 
 		GPIO.setup(i, GPIO.OUT) 
 		GPIO.output(i, GPIO.HIGH)
+	influxlog(curdt,'Relay_Heater',False)
 	for i in PUMPLIST: 
 		GPIO.setup(i, GPIO.OUT) 
 		GPIO.output(i, GPIO.HIGH)
+	influxlog(curdt,'Relay_Pump',False)	
 	for i in FANLIST: 
 		GPIO.setup(i, GPIO.OUT) 
 		GPIO.output(i, GPIO.HIGH)
+	influxlog(curdt,'Relay_Fan',False)
 		
 	camera = PiCamera()
 	
@@ -197,16 +208,12 @@ def main(args):
 		curtime = datetime.now().time()
 		curdt = datetime.now()
 
-		fans_setting = (getLightStatus(curtime) or getFanStatus(TARGETTEMP))
+		fans_setting = getFanStatus(TARGETTEMP)
 		
 		setLights(getLightStatus(curtime), curdt)
 		setHeaters(getHeaterStatus(TARGETTEMP), curdt)
 		setPumps(getPumpStatus(curtime), curdt)
 		setFans(fans_setting, curdt)
-		
-		if db_dirty:
-			db.commit_DB()
-			db_dirty = 0
 			
 		if curdt > nextphototime:
 			if lightstatus:
@@ -216,9 +223,8 @@ def main(args):
 				camera.capture(curfile)
 				print str(time.ctime()) + '        IMAGE CAPTURED'
 				nextphototime = curdt + timedelta(hours=PICTUREINTERVALHRS)
-			
+		
 		time.sleep(30)
-
 	return 0
 
 if __name__ == '__main__':

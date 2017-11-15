@@ -7,8 +7,8 @@ from influxdb import InfluxDBClient
 # Set this variables, influxDB should be localhost on Pi
 host = "localhost"
 port = 8086
-user = "root"
-password = "root"
+user = "admin"
+password = "admin"
  
 # The database we created
 dbname = "RS_Logs"
@@ -77,7 +77,7 @@ try:
 
 		# Write JSON to InfluxDB
 		client.write_points(json_body)
-		print str(iso) + "    Data Written to InfluxDB"
+		print str(iso) + "    Sensor Data Written to InfluxDB"
 		# Wait for next sample
 		time.sleep(interval)
  
