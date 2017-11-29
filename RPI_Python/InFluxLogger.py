@@ -46,7 +46,7 @@ try:
 		waterTemp	= PullReading.GetReading(6)
 		ec			= PullReading.GetReading(10)
 		iso 		= time.ctime()
-		print str(time.ctime()) + "    Readings retrieved"
+		# print str(time.ctime()) + "    Readings retrieved"
 
 		# Form JSON
 		json_body = [

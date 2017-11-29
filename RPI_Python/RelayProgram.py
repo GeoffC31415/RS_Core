@@ -83,12 +83,24 @@ def getPumpStatus(curtime):
 def getHeaterStatus(target):
 	result = client.query(TEMPQRY)
 	curtemp = list(result.get_points())
-	return (target > curtemp[0]['mean'])
+	retval = False
+	try:
+		retval = (target > curtemp[0]['mean'])
+	except:
+		retval = False
+		
+	return retval
 
 def getFanStatus(target):
 	result = client.query(TEMPQRY)
 	curtemp = list(result.get_points())
-	return (target < curtemp[0]['mean'])
+	retval = False
+	try:
+		retval = (target < curtemp[0]['mean'])
+	except:
+		retval = False
+		
+	return retval
 			
 def setLights(status, curdt):
 	global lightstatus, db_dirty
@@ -171,7 +183,7 @@ def influxlog(curdt, measurementstr, state):
 	
 	# Write JSON to InfluxDB
 	client.write_points(json_body)
-	print str(time.ctime()) + '    Relay Data Written to InfluxDB'
+	# print str(time.ctime()) + '    Relay Data Written to InfluxDB'
 	return 0
 
 def main(args):
@@ -201,17 +213,17 @@ def main(args):
 	influxlog(curdt,'Relay_Fan',False)
 		
 	camera = PiCamera()
-	
+	camera.rotation = 0
 	nextphototime = datetime.now() - timedelta(hours=1+PICTUREINTERVALHRS)
 	
 	while 1:
 		curtime = datetime.now().time()
 		curdt = datetime.now()
 
-		fans_setting = getFanStatus(TARGETTEMP)
+		fans_setting = getFanStatus(TARGETTEMP+1)
 		
 		setLights(getLightStatus(curtime), curdt)
-		setHeaters(getHeaterStatus(TARGETTEMP), curdt)
+		setHeaters(getHeaterStatus(TARGETTEMP-1), curdt)
 		setPumps(getPumpStatus(curtime), curdt)
 		setFans(fans_setting, curdt)
 			
