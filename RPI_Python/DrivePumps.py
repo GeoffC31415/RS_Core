@@ -50,13 +50,14 @@ def InjectPump(pumpnum, volume):
 	
 	# Power pump for the right amount of time
 	print "Adding from pump {:d}, volume {:d} ml. Should take {:.2f} minutes".format(pumpnum, volume, volume/FLOWRATE/60.0)
+	print "Starting... " + time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
 	GPIO.output(PUMPLIST[pumpnum-1], GPIO.LOW)
 	time.sleep(volume / FLOWRATE)
 	GPIO.output(PUMPLIST[pumpnum-1], GPIO.HIGH)
 	
 	GPIO.cleanup()
 	
-	print "Done!"
+	print "Done!       " + time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
 	return 0
 
 def main(args):
