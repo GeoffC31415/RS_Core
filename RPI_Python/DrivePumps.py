@@ -55,8 +55,6 @@ def InjectPump(pumpnum, volume):
 	time.sleep(volume / FLOWRATE)
 	GPIO.output(PUMPLIST[pumpnum-1], GPIO.HIGH)
 	
-	GPIO.cleanup()
-	
 	print str(time.ctime()) + "    Finished pumping from {}!".format(pumpnum)
 	return 0
 
