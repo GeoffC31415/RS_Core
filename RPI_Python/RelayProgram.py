@@ -26,6 +26,7 @@ import RPi.GPIO as GPIO
 import time
 import os
 import thread
+import RS_Database
 from DrivePumps import InjectPump
 from influxdb import InfluxDBClient
 from picamera import PiCamera
@@ -40,7 +41,7 @@ STARTHOUR_LIGHTS = 20
 STOPHOUR_LIGHTS = 8
 STARTHOUR_PUMP = 0
 STOPHOUR_PUMP = 24
-ECTARGET = 1900
+ECTARGET = 1800
 WATERINTERVALHRS = 1 #must be at least 1 to allow pumps time to work and water to stabilise
 WATERINJECT = 100 #mls to inject if over target
 # Static lists with pin numbers
@@ -208,6 +209,7 @@ def influxlog(curdt, measurementstr, state):
 
 def addWater(millilitres, ECReading):
 	print str(time.ctime()) + '    Auto adding {} ml, EC reading {}'.format(millilitres, ECReading)
+	RS_Database.log_Note('Auto added {:d}ml rainwater. EC {:.0f}.'.format(millilitres, ECReading),'Rain water',millilitres,'ml')
 	
 	# Spin up another thread for this as it involves a long sleep and we want to keep 
 	try:

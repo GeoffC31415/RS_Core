@@ -100,6 +100,45 @@ def log_relay(curtime, relay, state):
 	
 	return 0
 	
+def log_Note(strnote, stradditive, volume, strunit):
+	
+	qrystr = """
+				INSERT INTO Notes 	(
+									ID, 
+									LogTime, 
+									Note, 
+									Additive, 
+									Amount, 
+									Unit
+									) 
+		
+							VALUES 	(
+									NULL, 
+									CURRENT_TIME(), 
+									'{:s}',
+									'{:s}', 
+									{:.3f}, 
+									'{:s}')
+			""".format	(
+						strnote,
+						stradditive,
+						volume,
+						strunit
+						)
+	
+	if not 'cur' in globals():
+		connect_to_db()
+	
+	try:
+		cur.execute(qrystr)
+		db.commit()
+		
+	except:
+		print str(time.ctime()) + "    DB MySQL execute error"
+		print qrystr
+		
+	return 0
+
 def commit_DB():
 	
 	try:
