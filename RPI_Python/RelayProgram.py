@@ -25,6 +25,8 @@
 import RPi.GPIO as GPIO
 import time
 import os
+import thread
+from DrivePumps import InjectPump
 from influxdb import InfluxDBClient
 from picamera import PiCamera
 from datetime import datetime, timedelta
@@ -32,11 +34,15 @@ from datetime import datetime, timedelta
 # Parameters
 PICTUREINTERVALHRS = 1
 TEMPQRY = 'select mean(DHT2_Temp) from dev where time > now() - 10m'
+ECQRY = "select mean(\"Reservoir EC\") from dev where time > now() - 10m"
 TARGETTEMP = 21
 STARTHOUR_LIGHTS = 20
 STOPHOUR_LIGHTS = 8
 STARTHOUR_PUMP = 0
 STOPHOUR_PUMP = 24
+ECTARGET = 1900
+WATERINTERVALHRS = 1 #must be at least 1 to allow pumps time to work and water to stabilise
+WATERINJECT = 100 #mls to inject if over target
 # Static lists with pin numbers
 LIGHTLIST = [21]
 HEATERLIST = [16]
@@ -99,6 +105,20 @@ def getFanStatus(target):
 		retval = (target < curtemp[0]['mean'])
 	except:
 		retval = False
+		
+	return retval
+
+def getECReading():
+	result = client.query(ECQRY)
+	curtemp = list(result.get_points())
+	# Have the default return be zero
+	# easy to tell its not a true reading, 
+	# and also will result in no action
+	retval = 0
+	try:
+		retval = curtemp[0]['mean']
+	except:
+		retval = 0
 		
 	return retval
 			
@@ -186,6 +206,17 @@ def influxlog(curdt, measurementstr, state):
 	# print str(time.ctime()) + '    Relay Data Written to InfluxDB'
 	return 0
 
+def addWater(millilitres, ECReading):
+	print str(time.ctime()) + '    Auto adding {} ml, EC reading {}'.format(millilitres, ECReading)
+	
+	# Spin up another thread for this as it involves a long sleep and we want to keep 
+	try:
+		thread.start_new_thread(InjectPump, (4,millilitres))
+	except:
+		print 'Cannot start new thread for pumping'
+	
+	return 0
+
 def main(args):
  
 	GPIO.setmode(GPIO.BCM)
@@ -215,6 +246,7 @@ def main(args):
 	camera = PiCamera()
 	camera.rotation = 0
 	nextphototime = datetime.now() - timedelta(hours=1+PICTUREINTERVALHRS)
+	nextwatertime = datetime.now() - timedelta(hours=1+PICTUREINTERVALHRS)
 	
 	while 1:
 		curtime = datetime.now().time()
@@ -236,6 +268,13 @@ def main(args):
 				print str(time.ctime()) + '        IMAGE CAPTURED'
 				nextphototime = curdt + timedelta(hours=PICTUREINTERVALHRS)
 		
+		if curdt > nextwatertime:
+			ecreading = getECReading()
+			nextwatertime = curdt + timedelta(hours=WATERINTERVALHRS)
+			if ecreading > ECTARGET:
+				print str(time.ctime()) + '        PUMPING WATER'
+				addWater(WATERINJECT, ecreading)
+				
 		time.sleep(30)
 	return 0
 
