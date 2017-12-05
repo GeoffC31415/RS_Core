@@ -33,22 +33,15 @@ from picamera import PiCamera
 from datetime import datetime, timedelta
 
 # Parameters
-PICTUREINTERVALHRS = 1
 TEMPQRY = 'select mean(DHT2_Temp) from dev where time > now() - 10m'
-ECQRY = "select mean(\"Reservoir EC\") from dev where time > now() - 10m"
-TARGETTEMP = 21
-STARTHOUR_LIGHTS = 20
-STOPHOUR_LIGHTS = 8
-STARTHOUR_PUMP = 0
-STOPHOUR_PUMP = 24
-ECTARGET = 1800
-WATERINTERVALHRS = 1 #must be at least 1 to allow pumps time to work and water to stabilise
-WATERINJECT = 100 #mls to inject if over target
+ECQRY = "select mean(\"Reservoir EC\") from dev where time > now() - 30m"
+
 # Static lists with pin numbers
 LIGHTLIST = [21]
 HEATERLIST = [16]
 FANLIST = [20]
 PUMPLIST = [12]
+
 # InfluxDB settings
 HOST = "localhost"
 PORT = 8086
@@ -74,6 +67,10 @@ def archivePhoto(curfile,arcfile):
 	return 0
 
 def getLightStatus(curtime):
+	
+	STARTHOUR_LIGHTS = getSetting('LightsOn')
+	STOPHOUR_LIGHTS = getSetting('LightsOff')
+	
 	if STARTHOUR_LIGHTS < STOPHOUR_LIGHTS:
 		result = ((curtime.hour >= STARTHOUR_LIGHTS) and (curtime.hour < STOPHOUR_LIGHTS))
 	else:
@@ -81,7 +78,11 @@ def getLightStatus(curtime):
 	return result
 	
 def getPumpStatus(curtime):
-	if STARTHOUR_LIGHTS < STOPHOUR_LIGHTS:
+	
+	STARTHOUR_PUMP = getSetting('PumpOn')
+	STOPHOUR_PUMP = getSetting('PumpOff')
+	
+	if STARTHOUR_PUMP < STOPHOUR_PUMP:
 		result = ((curtime.hour >= STARTHOUR_PUMP) and (curtime.hour < STOPHOUR_PUMP))
 	else:
 		result = ((curtime.hour >= STARTHOUR_PUMP) or (curtime.hour < STOPHOUR_PUMP))
@@ -122,6 +123,9 @@ def getECReading():
 		retval = 0
 		
 	return retval
+	
+def getSetting(name, isTime=False):
+	return RS_Database.get_Setting(name,isTime)
 			
 def setLights(status, curdt):
 	global lightstatus, db_dirty
@@ -247,20 +251,31 @@ def main(args):
 		
 	camera = PiCamera()
 	camera.rotation = 0
+	
+	PICTUREINTERVALHRS = getSetting('PictureIntervalHrs')
+	WATERINTERVALHRS = getSetting('WaterIntervalHrs')
 	nextphototime = datetime.now() - timedelta(hours=1+PICTUREINTERVALHRS)
 	nextwatertime = datetime.now() - timedelta(hours=1+PICTUREINTERVALHRS)
 	
 	while 1:
+		# Reset time parameters
 		curtime = datetime.now().time()
 		curdt = datetime.now()
 
-		fans_setting = getFanStatus(TARGETTEMP+1)
+		# Retrieve all the parameters from the database
+		PICTUREINTERVALHRS = getSetting('PictureIntervalHrs')
+		WATERINTERVALHRS = getSetting('WaterIntervalHrs')
+		TARGETTEMP = getSetting('TargetTemp')
+		TARGETEC = getSetting('TargetEC')
+		WATERINJECTVOL = getSetting('WaterInjectVol')
 		
+		# Set all mains relays
 		setLights(getLightStatus(curtime), curdt)
 		setHeaters(getHeaterStatus(TARGETTEMP-1), curdt)
 		setPumps(getPumpStatus(curtime), curdt)
-		setFans(fans_setting, curdt)
+		setFans(getFanStatus(TARGETTEMP+1), curdt)
 			
+		# Take photo if the interval has passed
 		if curdt > nextphototime:
 			if lightstatus:
 				curfile = '/var/www/html/RS_Website/images/image_recent.jpg'
@@ -270,12 +285,13 @@ def main(args):
 				print str(time.ctime()) + '        IMAGE CAPTURED'
 				nextphototime = curdt + timedelta(hours=PICTUREINTERVALHRS)
 		
+		# Check and add water if the EC is too high
 		if curdt > nextwatertime:
 			ecreading = getECReading()
 			nextwatertime = curdt + timedelta(hours=WATERINTERVALHRS)
-			if ecreading > ECTARGET:
+			if ecreading > TARGETEC:
 				print str(time.ctime()) + '        PUMPING WATER'
-				addWater(WATERINJECT, ecreading)
+				addWater(WATERINJECTVOL, ecreading)
 				
 		time.sleep(30)
 	return 0

@@ -139,6 +139,36 @@ def log_Note(strnote, stradditive, volume, strunit):
 		
 	return 0
 
+def get_Setting(SettingName, isTime):
+		
+	if isTime:
+		strret = "ParameterDateTime"
+	else:
+		strret = "ParameterDecimal"
+		
+	qrystr = 	"""
+					SELECT {:s} FROM Settings WHERE Name = '{:s}'
+				""".format(strret, SettingName) 
+	
+	if not 'cur' in globals():
+		connect_to_db()
+		
+	try:
+		cur.execute(qrystr)
+		
+		rows = cur.fetchall()
+		
+	except:
+		print str(time.ctime()) + "    DB MySQL execute error"
+		print qrystr
+	
+	if isTime:
+		retval = rows[0][0]
+	else:
+		retval = int(rows[0][0])
+		
+	return retval
+
 def commit_DB():
 	
 	try:
