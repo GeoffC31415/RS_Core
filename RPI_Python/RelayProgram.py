@@ -253,7 +253,7 @@ def main(args):
 	camera.rotation = 0
 	
 	PICTUREINTERVALHRS = getSetting('PictureIntervalHrs')
-	WATERINTERVALHRS = getSetting('WaterIntervalHrs')
+	WATERINTERVALMINS = getSetting('WaterIntervalMins')
 	nextphototime = datetime.now() - timedelta(hours=1+PICTUREINTERVALHRS)
 	nextwatertime = datetime.now() - timedelta(hours=1+PICTUREINTERVALHRS)
 	
@@ -288,7 +288,7 @@ def main(args):
 		# Check and add water if the EC is too high
 		if curdt > nextwatertime:
 			ecreading = getECReading()
-			nextwatertime = curdt + timedelta(hours=WATERINTERVALHRS)
+			nextwatertime = curdt + timedelta(minutes=WATERINTERVALMINS)
 			if ecreading > TARGETEC:
 				print str(time.ctime()) + '        PUMPING WATER'
 				addWater(WATERINJECTVOL, ecreading)
